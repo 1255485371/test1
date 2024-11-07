@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <div>
+        <div class="input-group">
+            <label for="t1">t1:</label>
+            <input type="number" id="t1" value="20">
+        </div>
+        <div class="input-group">
+            <label for="t2">t2:</label>
+            <input type="number" id="t2" value="20">
+        </div>
+        <div class="input-group">
+            <label for="b">b:</label>
+            <input type="number" id="b" value="2">
+        </div>
+        <div class="input-group">
+            <label for="s1">s1:</label>
+            <input type="number" id="s1" value="20">
+        </div>
+        <button onclick="redraw()">Redraw</button>
+    </div>
+    <canvas id="c1" width="600" height="600">
+        浏览器不支持canva
+    </canvas>
+    
+    <script>
+        //找到画布
+        var c1=document.getElementById('c1');
+        //获取画笔
+        var ctx=c1.getContext("2d");
+        // 初始化变量
+        var t1 = 20;
+        var t2 = 20;
+        var b = 2;
+        var s1 = 20;
+
+          // 绘制初始图形
+          redraw();
+
+//画图
+function redraw() {
+    // 清除画布
+    ctx.clearRect(0, 0, c1.width, c1.height);
+
+        t1 = parseFloat(document.getElementById('t1').value);
+        t2 = parseFloat(document.getElementById('t2').value);
+        b = parseFloat(document.getElementById('b').value);
+        s1 = parseFloat(document.getElementById('s1').value);
+       // 描边矩形
+        ctx.beginPath();
+        ctx.strokeRect(100, 300, 80, `${t1}`);             
+        ctx.strokeRect(180 + b, 300, 80, `${t2}`);             
+        ctx.strokeRect(80, 300, 20, `${t1}`);             
+        ctx.strokeRect(260 + b, 300, 20, `${t2}`);            
+        ctx.stroke();
+        // ctx.strokeText(text, x, y, maxWidth);           // 描边文本
+        // 文本
+        ctx.font = '20px serif';                        // 设置字体
+        ctx.fillStyle = '#000';                         // 设置字体颜色
+        ctx.fillText(`t1=${t1}`, 235, 170);    // 填充文本c
+        ctx.fillText(`t2=${t2}`, 235, 190); 
+        ctx.fillText(`b=${b}`, 235, 210); 
+        ctx.fillText(`s1=${s1}`, 235, 230); 
+        ctx.fillText('t1', 60, 295+t1);   
+        ctx.fillText('t2', 290+b, 295+t2);   
+        ctx.fillText('b', 170+b, 365+t2);   
+        ctx.fillText('s1', 60, 220);   
+
+        // 绘制矩形背景
+        ctx.fillStyle = '#f0f0f0';
+        // 定义线条的颜色和宽度
+        ctx.strokeStyle = '#000000';
+        ctx.lineWidth = 1;
+        // 定义线条间隔和斜率
+        var lineSpacing = 5; // 线条之间的距离
+        var slope = 1;      // 正斜率
+
+//绘制直线方法
+function getstraight(fromX,fromY,toX,toY){
+    ctx.beginPath();
+    ctx.moveTo(fromX, fromY);
+    ctx.lineTo(toX, toY);           
+    ctx.stroke();
+}
+
+// 计算并绘制斜线
+function drawLines(slope,X,Y,width,height) {
+    // 计算线条的数量
+   var rectX=X;
+   var rectY=Y;
+   var rectWidth=width;
+   var rectHeight=height;
+    var numLines = Math.ceil((rectHeight + rectWidth * slope) / (lineSpacing * Math.sqrt(1 + slope * slope)));
+
+    for (let i = 0; i < numLines; i++) {
+        let startX = rectX;
+        let startY = rectY + rectHeight - i * lineSpacing * Math.sqrt(1 + slope * slope);
+
+        // 计算终点
+        let endX = startX + (rectY + rectHeight - startY) / slope;
+        let endY = rectY + rectHeight;
+
+        // 计算与矩形边界的交点
+        let intersectionPoints = getIntersectionPoints(startX, startY, endX, endY, rectX, rectY, rectWidth, rectHeight);
+
+        // 根据交点绘制线条片段
+        if (intersectionPoints.length === 4) {
+            ctx.beginPath();
+            ctx.moveTo(intersectionPoints[0], intersectionPoints[1]);
+            ctx.lineTo(intersectionPoints[2], intersectionPoints[3]);
+            ctx.stroke();
+        }
+    }
+}
+
+// 获取与矩形边界的交点
+function getIntersectionPoints(x1, y1, x2, y2, rectX, rectY, rectWidth, rectHeight) {
+    var points = [];
+
+    // 左侧边界
+    var leftX = rectX;
+    var leftY = y1 + ((leftX - x1) * (y2 - y1)) / (x2 - x1);
+    if (leftX >= rectX && leftX <= rectX + rectWidth && leftY >= rectY && leftY <= rectY + rectHeight) {
+        points.push(leftX, leftY);
+    }
+
+    // 右侧边界
+    var rightX = rectX + rectWidth;
+    var rightY = y1 + ((rightX - x1) * (y2 - y1)) / (x2 - x1);
+    if (rightX >= rectX && rightX <= rectX + rectWidth && rightY >= rectY && rightY <= rectY + rectHeight) {
+        points.push(rightX, rightY);
+    }
+
+    // 上侧边界
+    var topY = rectY;
+    var topX = x1 + ((topY - y1) * (x2 - x1)) / (y2 - y1);
+    if (topX >= rectX && topX <= rectX + rectWidth && topY >= rectY && topY <= rectY + rectHeight) {
+        points.push(topX, topY);
+    }
+
+    // 下侧边界
+    var bottomY = rectY + rectHeight;
+    var bottomX = x1 + ((bottomY - y1) * (x2 - x1)) / (y2 - y1);
+    if (bottomX >= rectX && bottomX <= rectX + rectWidth && bottomY >= rectY && bottomY <= rectY + rectHeight) {
+        points.push(bottomX, bottomY);
+    }
+
+    return points;
+}
+
+//获取箭头
+function drawLineArrow( fromX, fromY, toX, toY) {
+    const headLenth = 10;//自定义箭头线的长度r
+    const theta = 35;//箭头与线的夹角θ
+    let arrowX, arrowY;//箭头线终点坐标
+    // 计算各角度和对应的箭头终点坐标
+    const angle = Math.atan2(fromY - toY, fromX - toX) * 180 / Math.PI;
+    const angleLeft = (angle + theta) * Math.PI / 180;
+    const angleRight = (angle - theta) * Math.PI / 180;
+    const LpointX = headLenth * Math.cos(angleLeft);
+    const LpointY = headLenth * Math.sin(angleLeft);
+    const RpointX = headLenth * Math.cos(angleRight);
+    const RpointY = headLenth * Math.sin(angleRight);
+    ctx.beginPath();
+    //画直线
+    ctx.moveTo(fromX, fromY);
+    ctx.lineTo(toX, toY);
+ 
+    arrowX = toX + LpointX;
+    arrowY = toY + LpointY;
+    //画上边箭头线
+    ctx.moveTo(arrowX, arrowY);
+    ctx.lineTo(toX, toY);
+ 
+    arrowX = toX + RpointX;
+    arrowY = toY + RpointY;
+    //画下边箭头线
+    ctx.lineTo(arrowX, arrowY);
+    
+    ctx.strokeStyle =  "#000000";
+    ctx.stroke();
+}
+
+//绘制虚线
+   function drawDashedLine( startX, startY, endX, endY) {
+            // 保存当前绘图状态
+            ctx.save();
+            // 设置虚线样式
+            ctx.setLineDash([10,4]); // [实线长度, 间隔长度]
+            ctx.lineWidth = 1; // 线条宽度
+            ctx.strokeStyle = 'black'; // 线条颜色
+            // 开始绘制路径
+            ctx.beginPath();
+            ctx.moveTo(startX, startY); // 起点坐标 (x, y)
+            ctx.lineTo(endX, endY); // 终点坐标 (x, y)
+            // 绘制虚线
+            ctx.stroke();
+            // 恢复之前的绘图状态
+            ctx.restore();
+        }
+
+// 绘制正斜率线条
+        drawLines(0.6,100,300,80,t1);
+        drawLines(0.6,180+b,300,80,t2);
+
+        //画线条
+        getstraight(65,300,80,300);
+        getstraight(65,300+t1,80,300+t1);
+        getstraight(280+b,300,295+b,300);
+        getstraight(280+b,300+t2,295+b,300+t2);
+        getstraight(180,300+t1,180,355+t1);
+        getstraight(180+b,300+t2,180+b,355+t2);
+        getstraight(65,230,140,230);
+        getstraight(90,230,90,215);
+        getstraight(100,230,100,215);
+        //虚线
+        drawDashedLine(65,240,140,240);
+        //绘制箭头
+        drawLineArrow( 280+b, 280, 280+b, 300);
+        drawLineArrow( 280+b, 320+t2, 280+b, 300+t2);
+        drawLineArrow( 80, 280, 80, 300);
+        drawLineArrow( 80, 320+t1, 80, 300+t1);
+        drawLineArrow( 170, 335+t1, 180, 335+t1);
+        drawLineArrow( 190+b, 335+t2, 180+b, 335+t2);
+        drawLineArrow( 140, 230, 180, 295);
+    }
+
+    </script>
+</body>
+</html>
